@@ -1,7 +1,6 @@
 package com.nosaij.scooterhelp.controller;
 
 import com.nosaij.scooterhelp.dto.LoginDTO;
-import com.nosaij.scooterhelp.dto.LoginResponseDTO;
 import com.nosaij.scooterhelp.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +16,7 @@ public class AuthController {
     private final UserService service;
 
     @PostMapping("/login")
-    public LoginResponseDTO login( @RequestBody @Valid LoginDTO data){
+    public String login( @RequestBody @Valid LoginDTO data){
         return service.login(data.email(), data.password());
     }
 }
