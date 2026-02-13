@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 public class UserService {
     private final UserRepository repository;
     private final PasswordEncoder passwordEncoder;
+    private final TokenService tokenService;
 
     public User create(UserCreateDTO data){
         if (repository.findByEmail(data.email()).isPresent()){
@@ -30,18 +31,13 @@ public class UserService {
         return repository.save(user);
     }
 
-    public LoginResponseDTO login(String email, String password){
+    public String login(String email, String password){
         User user = repository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
 
         if(!passwordEncoder.matches(password, user.getPassword())){
             throw new RuntimeException("Invalid Password");
         }
 
-        return new LoginResponseDTO(
-                user.getId(),
-                user.getName(),
-                user.getEmail(),
-                user.getRole()
-        );
+        return tokenService.generateToken(user);
     }
 }
