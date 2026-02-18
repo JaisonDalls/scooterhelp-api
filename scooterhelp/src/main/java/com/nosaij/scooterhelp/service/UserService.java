@@ -1,43 +1,77 @@
 package com.nosaij.scooterhelp.service;
 
+import com.nosaij.scooterhelp.domain.Role;
 import com.nosaij.scooterhelp.domain.User;
-import com.nosaij.scooterhelp.dto.LoginDTO;
-import com.nosaij.scooterhelp.dto.LoginResponseDTO;
-import com.nosaij.scooterhelp.dto.UserCreateDTO;
+import com.nosaij.scooterhelp.dto.UserRequestDTO;
+import com.nosaij.scooterhelp.dto.UserResponseDTO;
+import com.nosaij.scooterhelp.repository.RoleRepository;
 import com.nosaij.scooterhelp.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
 public class UserService {
-    private final UserRepository repository;
-    private final PasswordEncoder passwordEncoder;
-    private final TokenService tokenService;
+    private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
 
-    public User create(UserCreateDTO data){
-        if (repository.findByEmail(data.email()).isPresent()){
-            throw new RuntimeException("Email already exists");
-        }
+    public UserResponseDTO create(UserRequestDTO dto){
+        List<Role> roles = dto.roles()
+                .stream()
+                .map(roleName -> roleRepository.findByName(roleName).orElseThrow(() -> new RuntimeException("Role not found."))).toList();
 
         User user = User.builder()
-                .name(data.name())
-                .email(data.email())
-                .password(passwordEncoder.encode(data.password()))
-                .role(data.role())
+                .name(dto.name())
+                .email(dto.email())
+                .roles(roles)
+                .password(dto.password())
                 .build();
 
-        return repository.save(user);
+        User saved = userRepository.save(user);
+
+        return toDTO(saved);
     }
 
-    public String login(String email, String password){
-        User user = repository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
+    public List<UserResponseDTO> findAll(){
+        return userRepository.findAll()
+                .stream()
+                .map(this::toDTO)
+                .toList();
+    }
 
-        if(!passwordEncoder.matches(password, user.getPassword())){
-            throw new RuntimeException("Invalid Password");
-        }
+    public UserResponseDTO findById(String id){
+        return userRepository.findById(id).map(this::toDTO).orElseThrow(() -> new RuntimeException("User not found"));
+    }
 
-        return tokenService.generateToken(user);
+    public void delete(String id){
+        User user = userRepository.findById(id).orElseThrow(()-> new RuntimeException("User not found"));
+        userRepository.delete(user);
+    }
+
+    public UserResponseDTO update(String id, UserResponseDTO dto){
+        User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
+
+       List<Role> roles = dto.roles()
+               .stream()
+               .map(roleName -> roleRepository.findByName(roleName).orElseThrow(()->new RuntimeException("Role not found"))).toList();
+
+       user = User.builder()
+               .id(user.getId())
+               .name(user.getName())
+               .email(user.getEmail())
+               .password(user.getPassword())
+               .roles(roles)
+               .build();
+
+       return toDTO(user);
+    }
+
+    private UserResponseDTO toDTO(User user){
+        List<String> roles = user.getRoles().stream().map(Role::getName).toList();
+
+        return new UserResponseDTO(user.getId(), user.getName(), user.getEmail(), roles);
     }
 }

@@ -1,11 +1,13 @@
 package com.nosaij.scooterhelp.dto;
 
-import com.nosaij.scooterhelp.domain.UserRole;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
-public record UserCreateDTO(
+import java.util.List;
+
+public record UserRequestDTO(
         @NotBlank
         String name,
 
@@ -16,7 +18,7 @@ public record UserCreateDTO(
         @NotBlank
         String password,
 
-        @NotNull
-        UserRole role
+        @NotEmpty
+        List<@NotBlank String> roles
 ) {
 }

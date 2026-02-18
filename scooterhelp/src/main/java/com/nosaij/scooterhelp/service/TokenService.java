@@ -9,18 +9,18 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Date;
+import java.util.Map;
 
 @Service
 public class TokenService {
 
     private static final String SECRET = "my-secret-key";
 
-    public String generateToken(User user){
+    public String generateToken(User user) {
         Algorithm algorithm = Algorithm.HMAC256(SECRET);
         return JWT.create()
                 .withIssuer("scooterhelp-api")
-                .withSubject(user.getEmail())
-                .withClaim("role", user.getRole().name())
+                .withClaim("email", user.getEmail())
                 .withClaim("name", user.getName())
                 .withExpiresAt(expirationDate())
                 .sign(algorithm);
@@ -30,5 +30,19 @@ public class TokenService {
         return LocalDateTime.now()
                 .plusHours(2)
                 .toInstant(ZoneOffset.of("-03:00"));
+    }
+
+    public String validateToken(String token) {
+        try {
+            Algorithm algorithm = Algorithm.HMAC256(SECRET);
+
+            return JWT.require(algorithm)
+                    .withIssuer("scooterhelp-api")
+                    .build()
+                    .verify(token)
+                    .getClaim("email").asString();
+        } catch (Exception e) {
+            return null;
+        }
     }
 }
