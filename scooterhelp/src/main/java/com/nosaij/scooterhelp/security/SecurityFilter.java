@@ -19,7 +19,7 @@ import java.io.IOException;
 public class SecurityFilter extends OncePerRequestFilter {
 
     private final TokenService tokenService;
-    private final UserRepository repository;
+    private final UserRepository userRepository;
 
     @Override
     protected void doFilterInternal(
@@ -31,7 +31,7 @@ public class SecurityFilter extends OncePerRequestFilter {
         if (token != null) {
             var email = tokenService.validateToken(token);
             if (email != null) {
-                var user = repository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
+                var user = userRepository.findAllWithRoles();
                 var authentication = new UsernamePasswordAuthenticationToken(user, null);
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);

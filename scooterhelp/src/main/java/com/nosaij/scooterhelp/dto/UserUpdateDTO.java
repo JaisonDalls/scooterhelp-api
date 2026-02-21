@@ -1,4 +1,6 @@
 package com.nosaij.scooterhelp.dto;
 
-public record UserUpdateDTO() {
+import com.nosaij.scooterhelp.domain.Address;
+
+public record UserUpdateDTO(String name, String password, String phone, String email) {
 }
