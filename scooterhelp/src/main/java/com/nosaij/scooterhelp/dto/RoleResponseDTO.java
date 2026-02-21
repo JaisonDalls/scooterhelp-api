@@ -1,4 +1,7 @@
 package com.nosaij.scooterhelp.dto;
 
-public record RoleResponseDTO() {
+public record RoleResponseDTO(
+        Long id,
+        String name
+) {
 }
