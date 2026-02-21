@@ -9,9 +9,11 @@ import java.util.List;
 @Entity
 @Table(name = "roles")
 @Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@EqualsAndHashCode(of = "name")
 public class Role implements Serializable {
 
     @Id
